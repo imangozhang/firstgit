@@ -22,7 +22,8 @@ $ git add file2.txt
 $ git commit -m "add 2 files"
 
 《==========================================================》
-第二部分 更新项目
+第二部分 项目修改
+2.1 版本更新
 如果我们对本地文件做了更改，如我的emacs-key-binding文件，我又新加了内容，则可以通过以下命令查看：
 $ git status
 会提示你：你的文件做了修改，但是还没有更新到仓库中。
@@ -32,3 +33,150 @@ $ git diff filename
 
 然后，我们沿用常规套路，添加并提交文件：
 $ git add emacs-key-binding
+
+浏览所有修改记录：
+$ git log
+注意：记录是根据日期由近及远显示的。
+显示内容说明：
+commit ********   #******是一个很大的数字，表示commit id，是一个SHA1计算出来的数字，用十六进制表示，这样做的目的是，Git是分布式的版本控制系统，如果多人在同一个版本库里工作，大家都用1,2,3...这样简单的数字作为版本号，肯定会冲突。
+
+2.2 版本回退
+    首先，Git必须知道当前版本是哪个，在Git中，用HEAD表示当前版本（最新版本）。上一个版本为HEAD^，上上个版本为HEAD^^，前100个版本为HEAD~100。
+回退到上一个版本:
+  $ git reset --hard HEAD^
+返回到最新版本（即取消回退）：
+  $ git reset --hard 82b19
+注意，取消回退的前提是你知道最新版本号的id（刚刚的shell窗口的git log还没关，你可以查到），这样你就可以通过id再回到最新版本，这里的id没必要都写完整，写前几位即可，Git会自动查找。如果不知道id怎么办？                   还是有办法的：
+  $ git reflog
+  这个命令会记录你每一次的命令。
+
+2.3 工作区和版本库
+工作区（即本地目录firstgit）--add-->版本库----stage（暂存区）-commit|
+                                      -----master（分支)    <-|
+HEAD是一个指针，指向第一个master。
+
+[[./workspace.jpg]]
+
+  git add把文件添加到暂存区；git commit实际是把暂存区的所有内容提交到当前分支。我们创建Git版本库时，Git自动为我们创建了唯一一个master分支，现在，commit就是往该master分支提交更改。
+
+  关于修改
+  Git管理的是修改，而非文件。
+  例如：修改文件 --> add --> 修改文件 --> commit  只提交第一次的
+       修改文件 --> add --> 修改文件 --> add --> commit 两次的都提交
+
+  撤销修改
+  当你在工作区对文件进行了修改还为进入暂存区；或者你修改后文件已经被加到了暂存区：
+  $ git checkout --mygit  ;;可以帮助我们撤销修改
+
+  文件删除
+  如果添加了一个新文件在工作区（文件名：test.txt），并且：
+  $ git add test.txt
+  如果想删除，则：
+  $ rm test.txt
+  $ git rm test.txt
+  $ git commit -m "remove test.txt"
+  另一种情况，误删了文件test.txt:
+  $ git checkout      ;;一键还原
+
+第三部分 远程仓库及分支
+3.1. 远程仓库
+（1）创建SSH Key
+    $ ssh-keygen -t rsa -C "188XXXXxxxx@qq.com"
+    这样，你的/home/.ssh/下面就多了两个文件：id_rsa、id_rsa.pub。前者是私钥，后者是公钥，私钥不能泄露出去。这样就可以在GitHub上的Setting->Account->SSH and GPG keys中把你的public-key添加进去了。
+    SSH Key的作用：Github以此确认你推送的提交确实是来自你，而不是别人了。当然，如果你有多台电脑，你需要把每台电脑的SSH Key都添加进去。
+（2）创建新的reprositoty
+  在Github上创建新的reprository，命名为firstgit。
+（3）关联到本地仓库
+  $ git remote add origin git@github.com:imangozhang/firstgit.git
+  其中，origin就是远程库的名称，Git的默认叫法。后面是我的Github仓库的地址。
+（4）推送内容
+  $ git push -u origin master
+  用git push命令把当前分支master推送到远程。
+（5）从远程库克隆
+  $ git clone git@github.com:imangozhang/test-clone.git
+  通过git clone可以把test-clone仓库克隆到本地。当然，上面是用ssh协议，地址是那样的；如果你用http协议的话，克隆地址应该类似于：https://github.com/imangozhang/test-clone.git
+
+3.2. 分支管理
+  在版本回退里，每次提交，Git都把它们串成一条事件线，这条时间线就是一个分支。截止到目前，只有一条时间线，在Git里，这个分支叫主分支，即master分支。HEAD严格来说，是指向master，master才指向提交，所以，HEAD指向的就是当前分支。
+  当我们创建新的分支，例如dev，Git会新建一个指针叫dev，指向master相同的提交，再把HEAD指向dev，即当前分支在dev上。所以，从此刻起的提交都是在dev上了，dev会随着提交不断后移，而master则原地不动。
+  当dev分支完成了，就可以把dev合并到master：直接把master指向dev的当前提交，然后可以删除dev了。
+  实战：
+  （1）创建一个新的分支dev
+  $ git checkout -b dev
+  git checkout -b表示创建并切换到新的分支，相当于：git branch dev，gi checkout dev。
+  （2）查看当前分支
+  $ git branch
+  该命令会列出所有分支，并在当前分支前标注一个*。
+  （3）在dev分支完成任务
+  在dev分支下，对README.md进行了修改。然后添加、提交。
+  （4）切换回master分支
+  $ git checkout master
+  切换回去后，打开README.md发现，刚刚的修改不存在！正常，因为你现在在master分支，你的修改和提交是在dev分支上。
+  （5）合并分支
+  $ git merge dev
+  把dev分支合并到master上，此时，你再打开README.md就会发现，文件的修改已经有了。
+  （6）删除分支
+  dev已经完成并合并到master了，此时可以删除dev了。
+  $ git branch -d dev
+
+3.3 冲突解决
+    当你有两个分支，并且两个分支分别对文件做了修改并且提交。此时合并的话就会发生冲突。需要你手动编辑文件，修改为你希望的样子，然后再提交文件，即可解决冲突。
+    此外，我们可以通过命令查看分支合并图：
+    $ git log --graph
+
+3.4 分支管理策略
+    通常合并分支时，Git会用Fast forward模式，但这种模式删除分支后，会丢掉分支信息。如果要强制禁用Fast forward模式，Git就会在merge时生成一个新的commit，这样可以从分支历史上就可以看出分支信息。
+    假如我们在dev分支上对文件做了修改，然后切换会master分支，希望采用--no-ff模式进行分支快速合并：
+    $ git merge --no-ff -m "merge with no-ff" dev
+    因为本次合并要创建新的commit，所以加上-m参数和commit描述。
+
+    所以，在实际开发当中，分支管理的基本原则：
+    1.master分支应该是稳定的，仅用来发布新版本，平时不在上面干活；
+    2.所有人都在dev分支上干活，dev是不稳定的。并且没个人都有自己的分支，到某个时候，往dev分支上合并即可。当某个版本完成了，然后把dev合并到master上。
+
+3.5 Bug分支
+    场景：当你在某一分支（dev）上工作的时候，通知你去修复一个位于master分支的bug。但是当前工作还没完成，不想提交，怎么办？
+    解决流程：
+  （1）存储工作现场
+    $ git stash
+    现在用git status查看工作区是干净的。
+  （2）到指定分支修复Bug
+    $ git chackout master           ;;该Bug位于master分支
+    $ git chackout -b issue-101     ;;创建临时分支用于修复Bug
+    ...                             ;;修复过程
+    $ git merge --no-ff -m "fix bug 101" issue-101  ;;合并分支
+    $ git branch -d issue-101       ;;删除临时分支
+  （3）切回工作分支
+    $ git checkout dev
+  （4）恢复工作现场
+    $ git stash list      ;;查看工作现场列表
+    ;;恢复工作现场有两种方法，方法一：
+    $ git stash apply     ;;恢复
+    $ git stash drop      ;;删除stash的内容
+    ;;方法二：
+    $ git stash pop       ;;恢复并且删除stash的内容
+
+    如果你多次stash，恢复的时候先查看，然后恢复指定的stash即可：
+    $ git stach list
+    $ git stach apply stash@{0}
+
+    在实际开发当中，我们可能要针对某一软件添加新的功能。此时的做法与秀姑bug类似，先在dev分支上创建一个feature分支，在该分支上进行开发，开发完毕后合并到dev分支。
+    如果还未合并，就要删除掉该分支（不开发该功能了……），则：
+    $ git branch -D featurnname
+
+3.5 推送分支
+    $ git push origin master
+    $ git push origin dev
+
+3.6 抓取分支
+    如果是多人协作，别人要拿到你的工作分支，在上面继续修改：
+    $ git clone git@github.com:imanggozhang/first.git   ;;对方先把你的分支克隆到本地，注意，此时他只能看到你的master分支。如果想在dev分支上继续工作，则：
+    $ git checkout -b origin/dev
+    现在，就有dev分支了，可以在上面继续工作。
+    问题来了----
+    如果你和你的小伙伴都对dev下的文件做了修改并且提交，然后把dev分支推送到远程仓库，此时就会发生冲突，怎么办？
+    $ git branch --set-upstreampto=origin/dev dev ;;设置dev和origin/dev的链接
+    $ git pull                                ;;抓取，显示有冲突
+    ...                                       ;;手动合并
+    $ git commit -m "fix dev conflict"        ;;冲突解决，提交成功
+    $ git push origin dev                     ;;push成功
