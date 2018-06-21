@@ -21,7 +21,7 @@ $ git add file1.txt
 $ git add file2.txt
 $ git commit -m "add 2 files"
 
-《==========================================================》
+
 第二部分 项目修改
 2.1 版本更新
 如果我们对本地文件做了更改，如我的emacs-key-binding文件，我又新加了内容，则可以通过以下命令查看：
@@ -181,10 +181,5 @@ HEAD是一个指针，指向第一个master。
     $ git commit -m "fix dev conflict"        ;;冲突解决，提交成功
     $ git push origin dev                     ;;push成功
 
-begin
-added by master........
-end!!!!
-
-;;;
-changed in test-rebase.........
-end!
+3.6 Rebase
+    多人协作时，后push的同学不得不先pull，在本地合并，然后才能push成功。每次合并再push的结构图看着很乱，而git rebase就可以把分叉的提交历史“整理”成一条直线，看上去更直观；然后通过push操作把本地分支推送到远程。
