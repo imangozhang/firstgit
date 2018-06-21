@@ -180,3 +180,7 @@ HEAD是一个指针，指向第一个master。
     ...                                       ;;手动合并
     $ git commit -m "fix dev conflict"        ;;冲突解决，提交成功
     $ git push origin dev                     ;;push成功
+
+begin
+added by master........
+end!!!!
