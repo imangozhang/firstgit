@@ -184,3 +184,7 @@ HEAD是一个指针，指向第一个master。
 begin
 added by master........
 end!!!!
+
+;;;
+changed in test-rebase.........
+end!
